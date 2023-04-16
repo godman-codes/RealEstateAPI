@@ -104,7 +104,7 @@ namespace RealEstateAPI.Controllers
                     Result = false,
                     Errors = new List<string>()
                     {
-                        "SOmething went wrong"
+                        "Something went wrong"
                     }
                 });
         }
