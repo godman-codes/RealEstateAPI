@@ -1,13 +1,10 @@
 ﻿
-using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace RealEstateAPI.Model
 {
-    public class UsersOrRealtors
+    public class UsersOrRealtors : IdentityUser
     {
-        [Key]
-        public int Id { get; set; }
-        public string UserId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string PhoneNumber { get; set; }
@@ -15,5 +12,7 @@ namespace RealEstateAPI.Model
         public bool IsRealtor { get; set; }
         public ICollection<Listings> Listings { get; set; }
         public ICollection<Offers> Offers { get; set; }
+        public DateTime DateCreated { get; set; }
+        public DateTime LastDateModified { get; set; }
     }
 }
