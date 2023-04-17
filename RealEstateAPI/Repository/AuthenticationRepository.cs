@@ -17,19 +17,21 @@ namespace RealEstateAPI.Repository
         private readonly IConfiguration _configuration;
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly UserManager<UsersOrRealtors> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public AuthenticationRepository(
             ApiDbContext context,
             IConfiguration configuration,
             TokenValidationParameters tokenValidationParameter,
-            UserManager<UsersOrRealtors> userManager
+            UserManager<UsersOrRealtors> userManager,
+             RoleManager<IdentityRole> roleManager
             )
         {
             _context = context;
             _configuration = configuration;
             _tokenValidationParameters = tokenValidationParameter;
             _userManager = userManager;
-            
+            _roleManager = roleManager;
 
 
         }
@@ -55,6 +57,7 @@ namespace RealEstateAPI.Repository
             dateTimeVal = dateTimeVal.AddSeconds(unixTimeStamp).ToUniversalTime();
             return dateTimeVal;
         }
+
 
         public async Task<AuthResult> VerifyAndGenerate(TokenRequestDto tokenRequest)
         {
@@ -133,7 +136,8 @@ namespace RealEstateAPI.Repository
                 _context.RefreshTokens.Update(storedToken);
                 await Save();
                 var dbUser = await _userManager.FindByIdAsync(storedToken.UserId);
-                return await GenerateJwtToken(dbUser);
+                ICollection<string> roleName = await _userManager.GetRolesAsync(dbUser);
+                return await GenerateJwtToken(dbUser, roleName.First());
                 
             }
             catch (Exception)
@@ -154,7 +158,7 @@ namespace RealEstateAPI.Repository
         {
             throw new NotImplementedException();
         }
-        public async Task<AuthResult> GenerateJwtToken(UsersOrRealtors user)
+        public async Task<AuthResult> GenerateJwtToken(UsersOrRealtors user, string role)
         {
             // token handler for generating token
             var jwtTokenhandler = new JwtSecurityTokenHandler();
@@ -167,10 +171,12 @@ namespace RealEstateAPI.Repository
                     {
                         //claims
                         new Claim(type: "Id", value: user.Id),
-                        new Claim(type: JwtRegisteredClaimNames.Sub, value: user.Email),
+                        new Claim(type: JwtRegisteredClaimNames.Sub, value: user.Id),
                         new Claim(type: JwtRegisteredClaimNames.Email, value: user.Email),
                         new Claim(type: JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                        new Claim(type: JwtRegisteredClaimNames.Iat, value: DateTime.Now.ToUniversalTime().ToString())
+                        new Claim(type: JwtRegisteredClaimNames.Iat, value: DateTime.Now.ToUniversalTime().ToString()
+                        ),
+                        new Claim(type: ClaimTypes.Role, value: role)
                     }
                     ),
                 Expires = DateTime.UtcNow.Add(TimeSpan.Parse(_configuration.GetSection("JwtConfig:ExpiryTimeVFrame").Value)),
@@ -211,5 +217,49 @@ namespace RealEstateAPI.Repository
                 );
         }
 
+        public async Task<string> AddUserRoles(UsersOrRealtors usersOrRealtors)
+        {
+            // add user to role manager
+            if (usersOrRealtors.IsRealtor)
+            {
+                var realtorRole = await _roleManager.FindByNameAsync("Realtor");
+                if (realtorRole != null)
+                {
+                    
+                    IdentityResult roleResult = await _userManager.AddToRoleAsync(usersOrRealtors, realtorRole.Name);
+
+                    if (roleResult.Succeeded)
+                    {
+                        return realtorRole.Name; 
+                    }
+                }
+                return null;
+
+            } else if (usersOrRealtors.IsAdmin)
+            {
+                var adminRole = await _roleManager.FindByNameAsync("Admin");
+                if (adminRole != null)
+                {
+
+                    IdentityResult roleResult = await _userManager.AddToRoleAsync(usersOrRealtors, adminRole.Name);
+                    if (roleResult.Succeeded)
+                    {
+                        return adminRole.Name;
+                    }
+                }
+                return null;
+            }
+            var memberRole = await _roleManager.FindByNameAsync("Member");
+            if (memberRole != null)
+            {
+                IdentityResult roleResult = await _userManager.AddToRoleAsync(usersOrRealtors, memberRole.Name);
+                if (roleResult.Succeeded)
+                {
+                    return memberRole.Name;
+                }
+            }
+            return null;
+
+        }
     }
 }

@@ -9,9 +9,9 @@ namespace RealEstateAPI.Interfaces
         Task<Listings> GetListing(int listingId);
         Task<bool> UpdateListing(Listings listing);
         Task<bool> MakeListingAvailable(Listings listing);
-        Task<bool> UpdateListings(Listings listing);
+       
         Task<bool> DeleteListing(Listings listing);
-        Task<ICollection<Listings>> GetListingsByOwner(int ownerId);
+        Task<ICollection<Listings>> GetListingsByOwner(string ownerId);
         Task<ICollection<Offers>> GetListingOffers (int listingId);
         Task<bool> ListingExist(int Id);
         Task<bool> Save();

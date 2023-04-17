@@ -1,4 +1,5 @@
-﻿using RealEstateAPI.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using RealEstateAPI.Data;
 using RealEstateAPI.Interfaces;
 using RealEstateAPI.Model;
 
@@ -25,12 +26,14 @@ namespace RealEstateAPI.Repository
 
         async public Task<ICollection<Listings>> GetAvailableListings()
         {
-            throw new NotImplementedException();
+            return await _context.Listings.Where(x => x.IsListed == true).ToListAsync();
         }
 
         async public Task<Listings> GetListing(int listingId)
         {
-            throw new NotImplementedException();
+            return await _context.Listings.Where(
+                x => x.Id == listingId && x.IsListed ==true
+                ).FirstOrDefaultAsync();
         }
 
         async public Task<ICollection<Offers>> GetListingOffers(int listingId)
@@ -38,14 +41,14 @@ namespace RealEstateAPI.Repository
             throw new NotImplementedException();
         }
 
-        async public Task<ICollection<Listings>> GetListingsByOwner(int ownerId)
+        async public Task<ICollection<Listings>> GetListingsByOwner(string ownerId)
         {
-            throw new NotImplementedException();
+            return _context.Listings.Where(x => x.Owner.Id == ownerId).ToList();
         }
 
         async public Task<bool> ListingExist(int Id)
         {
-            throw new NotImplementedException();
+            return await _context.Listings.AnyAsync(x => x.Id == Id);
         }
 
         async public Task<bool> MakeListingAvailable(Listings listing)
@@ -61,12 +64,8 @@ namespace RealEstateAPI.Repository
 
         async public Task<bool> UpdateListing(Listings listing)
         {
-            throw new NotImplementedException();
-        }
-
-        async public Task<bool> UpdateListings(Listings listing)
-        {
-            throw new NotImplementedException();
+            _context.Update(listing);
+            return await Save();
         }
     }
 }

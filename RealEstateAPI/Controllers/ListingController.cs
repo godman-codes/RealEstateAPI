@@ -1,26 +1,40 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using RealEstateAPI.Dtos;
 using RealEstateAPI.Interfaces;
 using RealEstateAPI.Model;
-
-
+using System.Security.Claims;
 
 namespace RealEstateAPI.Controllers
 {
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Route("api/[controller]")]
     [ApiController]
     public class ListingController : ControllerBase
     {
         private readonly IListingsRepository _listingRepository;
+        private readonly UserManager<UsersOrRealtors> _userManager;
+        private readonly IMapper _mapper;
 
-        public ListingController(IListingsRepository listingsRepository)
+        public ListingController(
+            IListingsRepository listingsRepository,
+            UserManager<UsersOrRealtors> userManager,
+            IMapper mapper
+            )
         {
-               _listingRepository = listingsRepository;
+            _listingRepository = listingsRepository;
+            _userManager = userManager;
+            _mapper = mapper;
+
         }
 
         [HttpPost]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
+        [Authorize(Roles = "Realtor,Admin")]
         public async Task<IActionResult> CreateListings([FromBody] CreateListingDto listingToCreate)
         {
             if (listingToCreate == null)
@@ -31,6 +45,9 @@ namespace RealEstateAPI.Controllers
             {
                 return BadRequest(ModelState);
             }
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var user = await _userManager.FindByIdAsync(userId);
+
             Listings listing = new Listings()
             {
                 StreetAddress = listingToCreate.StreetAddress,
@@ -42,7 +59,8 @@ namespace RealEstateAPI.Controllers
                 IsListed = listingToCreate.IsListed,
                 StartingPrice = listingToCreate.StartingPrice,
                 DateCreated = DateTime.UtcNow,
-                LastDateModified = DateTime.UtcNow
+                LastDateModified = DateTime.UtcNow,
+                Owner = user
             };
             if (! await _listingRepository.CreateListing(listing))
             {
@@ -51,5 +69,48 @@ namespace RealEstateAPI.Controllers
             }
             return Ok("Successfully Created");
         }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> GetAvailableListings()
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var availableListings = _mapper.Map<ICollection<ListingResponseDto>>(await _listingRepository.GetAvailableListings());
+
+            if (availableListings.Count == 0)
+            {
+                return Ok("No avilable listings");
+            }
+            return Ok(availableListings);
+        }
+
+        [HttpGet("{listingId}")]
+        [Authorize]
+        public async Task<IActionResult> GetListing(int listingId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (! await _listingRepository.ListingExist(listingId))
+            {
+                return NotFound();
+            }
+
+            var listing = _mapper.Map<ListingResponseDto>(await _listingRepository.GetListing(listingId));
+
+            if (listing == null)
+            {
+                return NotFound();
+            }
+            return Ok(listing);
+
+        }
+        
     }
 }

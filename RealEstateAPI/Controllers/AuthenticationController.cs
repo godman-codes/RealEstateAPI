@@ -4,6 +4,8 @@ using Microsoft.IdentityModel.Tokens;
 using RealEstateAPI.Dtos;
 using RealEstateAPI.Interfaces;
 using RealEstateAPI.Model;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace RealEstateAPI.Controllers
 {
@@ -15,9 +17,11 @@ namespace RealEstateAPI.Controllers
         private readonly IConfiguration _configuration;
         private readonly TokenValidationParameters _tokenValidationparameter;
         private readonly IAuthenticationRepository _authenticationRepository;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
         public AuthenticationController(
           UserManager<UsersOrRealtors> userManager,
+          RoleManager<IdentityRole> roleManager,
           IConfiguration configuration,
           TokenValidationParameters tokenValidationParameter,
           IAuthenticationRepository authenticationRepository
@@ -27,6 +31,7 @@ namespace RealEstateAPI.Controllers
             _configuration = configuration;
             _tokenValidationparameter = tokenValidationParameter;
             _authenticationRepository = authenticationRepository;
+            _roleManager = roleManager;
         }
 
         [HttpPost("Register")]
@@ -47,7 +52,7 @@ namespace RealEstateAPI.Controllers
                     Result = false,
                     Errors = new List<string>()
                     {
-                        "Email already exista"
+                        "Email already exist"
                     }
                 });
 
@@ -92,8 +97,29 @@ namespace RealEstateAPI.Controllers
                         }
                     });
             }
+
+            //get user from database 
+            new_user = await _userManager.FindByEmailAsync(new_user.Email);
+
+            // add roles
+            string roleName = await _authenticationRepository.AddUserRoles(new_user);
+
+            if (roleName == null)
+            {
+                return BadRequest(
+                    error: new AuthResult()
+                    {
+                        Result = false,
+                        Errors = new List<string>()
+                        {
+                            "Something went wrong while assigning roles"
+                        }
+                    }
+                    );
+            }
+
             //token 
-            var token = await _authenticationRepository.GenerateJwtToken(new_user);
+            var token = await _authenticationRepository.GenerateJwtToken(new_user, roleName);
             if (token.Result == true)
             {
                 return Ok(token);
@@ -146,7 +172,8 @@ namespace RealEstateAPI.Controllers
                     Result = false
                 });
             }
-            var jwtToken = await _authenticationRepository.GenerateJwtToken(existing_user);
+            ICollection<string> roleName = await _userManager.GetRolesAsync(existing_user);
+            var jwtToken = await _authenticationRepository.GenerateJwtToken(existing_user, roleName.First());
             return Ok(jwtToken);
         }
 
