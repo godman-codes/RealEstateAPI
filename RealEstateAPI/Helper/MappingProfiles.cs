@@ -9,6 +9,7 @@ namespace RealEstateAPI.Helper
         public MappingProfiles()
         {
             CreateMap<Listings, ListingResponseDto>();
+            CreateMap<CreateListingDto, Listings >();
             
         }
     }

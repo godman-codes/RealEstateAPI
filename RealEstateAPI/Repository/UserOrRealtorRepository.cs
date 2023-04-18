@@ -22,6 +22,11 @@ namespace RealEstateAPI.Repository
             throw new NotImplementedException();
         }
 
+        public async Task<Listings> GetRealtorUserListingById(string userId, int listingId)
+        {
+            return await _context.Listings.Where(x => x.Id == listingId && x.Owner.Id == userId).FirstOrDefaultAsync();
+        }
+
         public async Task<ICollection<Listings>> GetRealtorUserListings(string userId)
         {
             return await _context.Listings.Where(x => x.Owner.Id == userId).ToListAsync();

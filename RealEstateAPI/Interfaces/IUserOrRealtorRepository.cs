@@ -10,5 +10,6 @@ namespace RealEstateAPI.Interfaces
         Task<bool> UserOrRelatorExist(int id);
         ICollection<UsersOrRealtors> GetUsersOrRealtors();
         Task<ICollection<Listings>> GetRealtorUserListings(string userid);
+        Task<Listings> GetRealtorUserListingById(string userId, int listingId);
     }
 }

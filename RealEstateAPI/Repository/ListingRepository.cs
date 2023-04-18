@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using RealEstateAPI.Data;
+using RealEstateAPI.Dtos;
 using RealEstateAPI.Interfaces;
 using RealEstateAPI.Model;
 
@@ -62,9 +63,20 @@ namespace RealEstateAPI.Repository
             return save > 0;
         }
 
-        async public Task<bool> UpdateListing(Listings listing)
+        async public Task<bool> UpdateListing(CreateListingDto listingToUpdate, int listingId)
         {
-            _context.Update(listing);
+            var listing = _context.Listings.Where(x => x.Id == listingId).FirstOrDefault();
+
+            listing.StreetAddress = listingToUpdate.StreetAddress;
+            listing.City = listingToUpdate.City;
+            listing.Country = listingToUpdate.Country;
+            listing.State = listingToUpdate.State;
+            listing.PostalCode = listingToUpdate.PostalCode;
+            listing.StartingPrice = listingToUpdate.StartingPrice;
+            listing.IsListed = listingToUpdate.IsListed;
+            listing.Type = listingToUpdate.Type;
+            listing.LastDateModified = DateTime.UtcNow;
+
             return await Save();
         }
     }

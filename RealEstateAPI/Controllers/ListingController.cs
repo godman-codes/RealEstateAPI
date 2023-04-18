@@ -18,17 +18,19 @@ namespace RealEstateAPI.Controllers
         private readonly IListingsRepository _listingRepository;
         private readonly UserManager<UsersOrRealtors> _userManager;
         private readonly IMapper _mapper;
+        private readonly IUserOrRealtorRepository _userOrrealtorRepository;
 
         public ListingController(
             IListingsRepository listingsRepository,
             UserManager<UsersOrRealtors> userManager,
-            IMapper mapper
+            IMapper mapper,
+            IUserOrRealtorRepository userOrRealtorRepository
             )
         {
             _listingRepository = listingsRepository;
             _userManager = userManager;
             _mapper = mapper;
-
+            _userOrrealtorRepository = userOrRealtorRepository;
         }
 
         [HttpPost]
@@ -111,6 +113,41 @@ namespace RealEstateAPI.Controllers
             return Ok(listing);
 
         }
-        
+
+
+        [HttpPut("{listingId}")]
+        [Authorize(Roles = "Realtor, Admin")]
+        public async Task<IActionResult> UpdateListing([FromBody] CreateListingDto listingUpdate, int listingId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (listingUpdate == null)
+            {
+                return BadRequest(ModelState);
+            }
+            
+            if (! await _listingRepository.ListingExist(listingId))
+            {
+                return NotFound();
+            }
+            string userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var listingCheck = await _userOrrealtorRepository.GetRealtorUserListingById(userid, listingId);
+
+            if (listingCheck == null)
+            {
+                return Unauthorized();
+            }
+
+            if (! await _listingRepository.UpdateListing(listingUpdate, listingId))
+            {
+                ModelState.AddModelError("", "Somthing went wrong while saving");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
     }
 }

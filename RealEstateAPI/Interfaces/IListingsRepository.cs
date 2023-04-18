@@ -1,4 +1,5 @@
-﻿using RealEstateAPI.Model;
+﻿using RealEstateAPI.Dtos;
+using RealEstateAPI.Model;
 
 namespace RealEstateAPI.Interfaces
 {
@@ -7,7 +8,7 @@ namespace RealEstateAPI.Interfaces
         Task<bool> CreateListing(Listings listing);
         Task<ICollection<Listings>> GetAvailableListings();
         Task<Listings> GetListing(int listingId);
-        Task<bool> UpdateListing(Listings listing);
+        Task<bool> UpdateListing(CreateListingDto listingToUpdate, int listingsId);
         Task<bool> MakeListingAvailable(Listings listing);
        
         Task<bool> DeleteListing(Listings listing);

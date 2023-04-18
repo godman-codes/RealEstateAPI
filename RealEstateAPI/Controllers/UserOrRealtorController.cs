@@ -15,11 +15,16 @@ namespace RealEstateAPI.Controllers
     {
         private readonly IUserOrRealtorRepository _userOrReltorRepository;
         private readonly IMapper _mapper;
+        private readonly IListingsRepository _listingRepository;
 
-        public UserOrRealtorController(IUserOrRealtorRepository userOrReltorRepository, IMapper mapper)
+        public UserOrRealtorController(
+            IUserOrRealtorRepository userOrReltorRepository,
+            IMapper mapper,
+            IListingsRepository listingRepository)
         {
             _userOrReltorRepository = userOrReltorRepository;
             _mapper = mapper;
+            _listingRepository = listingRepository;
         }
 
 
@@ -41,5 +46,31 @@ namespace RealEstateAPI.Controllers
             return Ok(listings);
 
         }
+
+
+        [HttpGet("{listingId}")]
+        [Authorize(Roles = "Realtor, Admin")]
+        public async Task<IActionResult> GetRealtorListingById(int listingId)
+        {
+            if (!ModelState.IsValid) 
+            {
+                return BadRequest(ModelState);
+            }
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!await _listingRepository.ListingExist(listingId))
+            {
+                return NotFound();
+            }
+
+            var listing = _mapper.Map<ListingResponseDto>(await _userOrReltorRepository.GetRealtorUserListingById(userId, listingId));
+
+            if (listing == null)
+            {
+                return Unauthorized();
+            }
+            return Ok(listing);
+        }
+
     }
 }
