@@ -10,7 +10,8 @@ namespace RealEstateAPI.Helper
         {
             CreateMap<Listings, ListingResponseDto>();
             CreateMap<CreateListingDto, Listings >();
-            
+            CreateMap<OfferResponseDto, Offers>();
+            CreateMap<Offers, OfferResponseDto>();
         }
     }
 }

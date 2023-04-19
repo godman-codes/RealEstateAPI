@@ -8,7 +8,7 @@ using RealEstateAPI.Interfaces;
 using RealEstateAPI.Model;
 using RealEstateAPI.Repository;
 using System.Text;
-
+using System.Text.Json.Serialization;
 
 namespace RealEstateAPI
 {
@@ -23,6 +23,12 @@ namespace RealEstateAPI
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            builder.Services.AddControllers().AddJsonOptions(
+                x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
+                ); // this prevents error from happening when youre returning nested entities 
+                   //after using include in the Repository class
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -31,6 +37,7 @@ namespace RealEstateAPI
             builder.Services.AddScoped<IListingsRepository, ListingRepository>();
             builder.Services.AddScoped<IUserOrRealtorRepository, UserOrRealtorRepository>();
             builder.Services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
+            builder.Services.AddScoped<IOffersRepository, OffersRepository>();
 
             // automapper
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

@@ -4,13 +4,13 @@ namespace RealEstateAPI.Interfaces
 {
     public interface IOffersRepository
     {
-        bool CreateOffer(Offers Offer);
-        ICollection<Offers> GetOffers();
-        UsersOrRealtors GetOfferOwner(int offerId);
-        Offers GetOffer(int offerId);
-        bool UpdateOffer(Offers offer);
-        bool DeleteOffer(Offers offer);
-        bool Save();
-        bool OfferExists();
+        Task<bool> CreateOffer(Offers Offer);
+        Task<ICollection<Offers>> GetOffers();
+        Task<UsersOrRealtors> GetOfferOwner(int offerId);
+        Task<Offers> GetOffer(int offerId, string userId);
+        Task<bool> UpdateOffer(Offers offer);
+        Task<bool> DeleteOffer(Offers offer);
+        Task<bool> Save();
+        Task<bool> OfferExists();
     }
 }
