@@ -102,7 +102,7 @@ namespace RealEstateAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
-                BadRequest(ModelState); 
+               return BadRequest(ModelState); 
             }
 
             if (offerId == 0)
@@ -118,6 +118,41 @@ namespace RealEstateAPI.Controllers
             }
             return Ok(offer);
         }
-        
+
+        [HttpGet("ListingOffers/{listingId}")]
+        [Authorize(Roles = "Realtor, Admin")]
+        public async Task<IActionResult> GetListingOffers(int listingId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (listingId == 0)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (! await _listingRepository.ListingExist(listingId))
+            {
+                return NotFound();
+            }
+
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (! await _listingRepository.verifyOwner(userId, listingId))
+            {
+                return Unauthorized();
+            }
+
+            ICollection<RealtorsOfferResponseDto> offers = _mapper.Map<ICollection<RealtorsOfferResponseDto>>(await _offersRepository.GetListingOffers(listingId));
+
+            if (offers == null)
+            {
+                ModelState.AddModelError("No Offer", "You dont have any Offers for this property");
+                return Ok(ModelState);
+
+            }
+            return Ok(offers);
+        }
     }
 }

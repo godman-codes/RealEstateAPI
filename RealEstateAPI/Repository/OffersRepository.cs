@@ -26,6 +26,11 @@ namespace RealEstateAPI.Repository
             throw new NotImplementedException();
         }
 
+        public async Task<ICollection<Offers>> GetListingOffers(int listingId)
+        {
+            return await _context.Offers.Where(x => x.Listing.Id == listingId).Include(x => x.Owner).ToListAsync();
+        }
+
         public async Task<Offers> GetOffer(int offerId, string userId)
         {
             return await _context.Offers.Where(x => x.Id == offerId && x.Owner.Id == userId).Include(x => x.Listing).IgnoreAutoIncludes().FirstOrDefaultAsync();
@@ -57,5 +62,6 @@ namespace RealEstateAPI.Repository
         {
             throw new NotImplementedException();
         }
+
     }
 }

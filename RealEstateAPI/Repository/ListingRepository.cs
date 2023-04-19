@@ -79,5 +79,10 @@ namespace RealEstateAPI.Repository
 
             return await Save();
         }
+
+        public async Task<bool> verifyOwner(string ownerId, int listingId)
+        {
+            return await _context.Listings.AnyAsync(x => x.Id == listingId && x.Owner.Id == ownerId );
+        }
     }
 }

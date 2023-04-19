@@ -15,6 +15,7 @@ namespace RealEstateAPI.Interfaces
         Task<ICollection<Listings>> GetListingsByOwner(string ownerId);
         Task<ICollection<Offers>> GetListingOffers (int listingId);
         Task<bool> ListingExist(int Id);
+        Task<bool> verifyOwner(string ownerId, int listingId);
         Task<bool> Save();
     }
 }

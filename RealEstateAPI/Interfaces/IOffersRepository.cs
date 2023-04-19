@@ -12,5 +12,6 @@ namespace RealEstateAPI.Interfaces
         Task<bool> DeleteOffer(Offers offer);
         Task<bool> Save();
         Task<bool> OfferExists();
+        Task<ICollection<Offers>> GetListingOffers(int listingId);
     }
 }
