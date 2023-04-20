@@ -8,10 +8,10 @@ namespace RealEstateAPI.Interfaces
         Task<ICollection<Offers>> GetOffers();
         Task<UsersOrRealtors> GetOfferOwner(int offerId);
         Task<Offers> GetOffer(int offerId, string userId);
-        Task<bool> UpdateOffer(Offers offer);
+        Task<bool> UpdateOffer(int offerId, decimal amount, string userId);
         Task<bool> DeleteOffer(Offers offer);
         Task<bool> Save();
         Task<bool> OfferExists();
-        Task<ICollection<Offers>> GetListingOffers(int listingId);
+        Task<Offers> GetOfferInformation(int offerId, string userId);
     }
 }

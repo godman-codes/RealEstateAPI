@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using AutoMapper.Configuration.Annotations;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -37,7 +38,7 @@ namespace RealEstateAPI.Controllers
         }
 
 
-        [HttpPost("{listingId}")]
+        [HttpPost("Listing/{listingId}")]
         [Authorize]
         public async Task<IActionResult> MakeOfferForListing([FromBody] MakeOfferDtos offerToMake, int listingId)
         {
@@ -98,7 +99,7 @@ namespace RealEstateAPI.Controllers
 
         [HttpGet("{offerId}")]
         [Authorize]
-        public async Task<IActionResult> getOffer(int offerId)
+        public async Task<IActionResult> GetOffer(int offerId)
         {
             if (!ModelState.IsValid)
             {
@@ -119,40 +120,100 @@ namespace RealEstateAPI.Controllers
             return Ok(offer);
         }
 
-        [HttpGet("ListingOffers/{listingId}")]
+        [HttpGet("OfferInformation/{offerId}")]
         [Authorize(Roles = "Realtor, Admin")]
-        public async Task<IActionResult> GetListingOffers(int listingId)
+        public async Task<IActionResult> GetOfferinformation(int offerId)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            if (listingId == 0)
+
+            if (offerId == 0)
             {
                 return BadRequest(ModelState);
             }
 
-            if (! await _listingRepository.ListingExist(listingId))
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            OfferResponseDto offer = _mapper.Map<OfferResponseDto>(await _offersRepository.GetOfferInformation(offerId, userId));
+
+            if (offer == null)
             {
                 return NotFound();
             }
 
+            return Ok(offer);
+        }
+
+
+        [HttpPut("{offerId}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateOffer(int offerId, [FromBody] MakeOfferDtos offerToUpdate)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (offerId == 0)
+            {
+                return BadRequest(ModelState);
+            }
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (! await _listingRepository.verifyOwner(userId, listingId))
+            var offer = await _offersRepository.GetOffer(offerId, userId);
+
+            if ((offer.Listing.StartingPrice * (decimal)0.2) > offerToUpdate.amount)
             {
-                return Unauthorized();
+                ModelState.AddModelError("Invalid Amount", "Amoount offered must be more than 20% the starting price");
+                return BadRequest(ModelState);
             }
 
-            ICollection<RealtorsOfferResponseDto> offers = _mapper.Map<ICollection<RealtorsOfferResponseDto>>(await _offersRepository.GetListingOffers(listingId));
-
-            if (offers == null)
+            if (offer == null)
             {
-                ModelState.AddModelError("No Offer", "You dont have any Offers for this property");
-                return Ok(ModelState);
-
+                return NotFound();
             }
-            return Ok(offers);
+
+            if (! await _offersRepository.UpdateOffer(offerId, offerToUpdate.amount, userId))
+            {
+                ModelState.AddModelError("UpdateError", "Something went wrong while updateing");
+            }
+            return NoContent();
+            
+
         }
+
+        [HttpDelete("{offerId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteOffer(int offerId)
+        {
+            if (!ModelState.IsValid) {
+                return BadRequest(ModelState);
+            }
+
+            if (offerId == 0)
+            {
+                return BadRequest(ModelState);
+            }
+
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var offerToDelete = await _offersRepository.GetOffer(offerId, userId);
+
+            if (offerToDelete == null)
+            {
+                return NotFound();
+            }
+
+            if (!await _offersRepository.DeleteOffer(offerToDelete))
+            {
+                ModelState.AddModelError("deleteError", "Something went wrong while deleting");
+                return StatusCode(500, ModelState);
+            }
+
+            return NoContent();
+        }
+
     }
 }

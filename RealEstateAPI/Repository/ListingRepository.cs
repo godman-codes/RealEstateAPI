@@ -37,10 +37,11 @@ namespace RealEstateAPI.Repository
                 ).FirstOrDefaultAsync();
         }
 
-        async public Task<ICollection<Offers>> GetListingOffers(int listingId)
+        public async Task<ICollection<Offers>> GetListingOffers(int listingId)
         {
-            throw new NotImplementedException();
+            return await _context.Offers.Where(x => x.Listing.Id == listingId).Include(x => x.Owner).ToListAsync();
         }
+
 
         async public Task<ICollection<Listings>> GetListingsByOwner(string ownerId)
         {

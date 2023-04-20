@@ -1,6 +1,4 @@
-﻿using RealEstateAPI.Model;
-
-namespace RealEstateAPI.Dtos
+﻿namespace RealEstateAPI.Dtos
 {
     public class OfferResponseDto
     {
@@ -9,6 +7,7 @@ namespace RealEstateAPI.Dtos
         public bool IsAccepted { get; set; }
         public ListingResponseDto Listing { get; set; }
         // very important so you can amnipulate the nested responses
+        public UserOrRealtorDto Owner { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime LastDateModified { get; set; }
     }

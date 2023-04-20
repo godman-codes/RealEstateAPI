@@ -28,7 +28,7 @@ namespace RealEstateAPI.Controllers
         }
 
 
-        [HttpGet("GetRealtorListings")]
+        [HttpGet("Listings")]
         [Authorize(Roles = "Realtor, Admin")]
         public async Task<IActionResult> GetRealtorListings()
         {
@@ -48,7 +48,7 @@ namespace RealEstateAPI.Controllers
         }
 
 
-        [HttpGet("{listingId}")]
+        [HttpGet("Listing/{listingId}")]
         [Authorize(Roles = "Realtor, Admin")]
         public async Task<IActionResult> GetRealtorListingById(int listingId)
         {
