@@ -34,7 +34,7 @@ namespace RealEstateAPI.Controllers
             _mapper = mapper;
             _listingRepository = listingsRepository;
             _userManager = userManager;
-            
+
         }
 
 
@@ -47,12 +47,12 @@ namespace RealEstateAPI.Controllers
                 return BadRequest(ModelState);
             }
 
-            if (offerToMake== null)
+            if (offerToMake == null)
             {
                 return BadRequest(ModelState);
             }
 
-            if (listingId==0)
+            if (listingId == 0)
             {
                 return BadRequest(ModelState);
             }
@@ -88,7 +88,7 @@ namespace RealEstateAPI.Controllers
                 Owner = user
             };
 
-            if (! await _offersRepository.CreateOffer(offer))
+            if (!await _offersRepository.CreateOffer(offer))
             {
                 ModelState.AddModelError("", "Something went weong while saving");
                 return StatusCode(500, ModelState);
@@ -103,7 +103,7 @@ namespace RealEstateAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
-               return BadRequest(ModelState); 
+                return BadRequest(ModelState);
             }
 
             if (offerId == 0)
@@ -175,12 +175,12 @@ namespace RealEstateAPI.Controllers
                 return NotFound();
             }
 
-            if (! await _offersRepository.UpdateOffer(offerId, offerToUpdate.amount, userId))
+            if (!await _offersRepository.UpdateOffer(offerId, offerToUpdate.amount, userId))
             {
                 ModelState.AddModelError("UpdateError", "Something went wrong while updateing");
             }
             return NoContent();
-            
+
 
         }
 
@@ -215,5 +215,53 @@ namespace RealEstateAPI.Controllers
             return NoContent();
         }
 
+
+        [HttpPatch("{offerId}/accept")]
+        [Authorize(Roles = "Realtor, Admin")]
+        public async Task<IActionResult> AcceptOffer(int offerId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (offerId == 0)
+            {
+                return BadRequest(ModelState);
+            }
+
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (! await _offersRepository.AcceptOffer(offerId, userId))
+            {
+                ModelState.AddModelError("Server Error", "Something went wrong while accepting offer");
+                return StatusCode(500, ModelState);
+            }
+            return NoContent();
+        }
+
+        [HttpPatch("{offerId}/reject")]
+        [Authorize(Roles = "Realtor, Admin")]
+        public async Task<IActionResult> RegectOffer(int offerId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (offerId == 0)
+            {
+                return BadRequest(ModelState);
+            }
+
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!await _offersRepository.RejectOffer(offerId, userId))
+            {
+                ModelState.AddModelError("Server Error", "Something went wrong while accepting offer");
+                return StatusCode(500, ModelState);
+            }
+            return NoContent();
+        }
     }
 }

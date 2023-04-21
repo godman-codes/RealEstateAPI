@@ -133,10 +133,9 @@ namespace RealEstateAPI.Controllers
             {
                 return NotFound();
             }
-            string userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var listingCheck = await _userOrrealtorRepository.GetRealtorUserListingById(userid, listingId);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (listingCheck == null)
+            if (!await _listingRepository.verifyOwner(userId, listingId))
             {
                 return Unauthorized();
             }
@@ -186,5 +185,9 @@ namespace RealEstateAPI.Controllers
             }
             return Ok(offers);
         }
+
+
+        
+        
     }
 }

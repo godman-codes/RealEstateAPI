@@ -15,6 +15,34 @@ namespace RealEstateAPI.Repository
             _context = context;
         }
 
+        public async Task<bool> AcceptOffer(int offerId, string userId)
+        {
+            var offer = await _context.Offers.Where(x => x.Id == offerId && x.Listing.Owner.Id == userId).FirstOrDefaultAsync();
+
+            if (offer == null)
+            {
+                return false;
+            }
+
+            offer.IsAccepted = true;
+
+            return await Save();
+        }
+
+        public async Task<bool> RejectOffer(int offerId, string userId)
+        {
+            var offer = await _context.Offers.Where(x => x.Id == offerId && x.Listing.Owner.Id == userId).FirstOrDefaultAsync();
+
+            if (offer == null)
+            {
+                return false;
+            }
+
+            offer.IsAccepted = false;
+
+            return await Save();
+        }
+
         public async Task<bool> CreateOffer(Offers Offer)
         {
             await _context.AddAsync(Offer);
@@ -80,5 +108,7 @@ namespace RealEstateAPI.Repository
             offer.LastDateModified = DateTime.UtcNow;
             return await Save();
         }
+
+
     }
 }
