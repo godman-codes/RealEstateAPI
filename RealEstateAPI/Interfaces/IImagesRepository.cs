@@ -4,12 +4,12 @@ namespace RealEstateAPI.Interfaces
 {
     public interface IImagesRepository
     {
-        bool AddImages(Images image);
-        ICollection<Images> GetListingImages(int listingId);
-        bool DeleteImage(Images image);
-        bool UpdateImage(Images image);
-        Images GetImage(int id);
-        bool ImageExists(int id);
-        bool Save();
+        Task<bool> AddImages(IFormFile image, Listings listing);
+        Task<ICollection<Images>> GetListingImages(int listingId);
+        Task<bool> DeleteImage(Images image);
+        Task<bool> UpdateImage(Images image);
+        Task<Images> GetImage(int id);
+        Task<bool> ImageExists(int id);
+        Task<bool> Save();
     }
 }

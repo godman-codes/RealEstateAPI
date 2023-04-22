@@ -23,7 +23,7 @@ namespace RealEstateAPI
             // Add services to the container.
 
             builder.Services.AddControllers();
-
+            
             builder.Services.AddControllers().AddJsonOptions(
                 x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
                 ); // this prevents error from happening when youre returning nested entities 
@@ -38,6 +38,8 @@ namespace RealEstateAPI
             builder.Services.AddScoped<IUserOrRealtorRepository, UserOrRealtorRepository>();
             builder.Services.AddScoped<IAuthenticationRepository, AuthenticationRepository>();
             builder.Services.AddScoped<IOffersRepository, OffersRepository>();
+            builder.Services.AddScoped<IImagesRepository, ImagesRepository>();
+            builder.Services.AddCoreAdmin();
 
             // automapper
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
@@ -129,6 +131,9 @@ namespace RealEstateAPI
 
                 }
             }
+            app.MapDefaultControllerRoute();
+
+            app.UseCoreAdminCustomAuth((ServiceProvider) => Task.FromResult(true));
 
             app.Run();
         }

@@ -29,7 +29,7 @@ namespace RealEstateAPI.Repository
 
         public async Task<ICollection<Listings>> GetRealtorUserListings(string userId)
         {
-            return await _context.Listings.Where(x => x.Owner.Id == userId).ToListAsync();
+            return await _context.Listings.Where(x => x.Owner.Id == userId).Include(z => z.Images).ToListAsync();
         }
 
         public async Task<UsersOrRealtors> GetUserOrRelator(int id)

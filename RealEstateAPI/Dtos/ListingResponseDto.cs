@@ -1,4 +1,6 @@
-﻿namespace RealEstateAPI.Dtos
+﻿using RealEstateAPI.Model;
+
+namespace RealEstateAPI.Dtos
 {
     public class ListingResponseDto
     {
@@ -13,5 +15,6 @@
         public string Type { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime LastDateModified { get; set; }
+        public ICollection<ImageResponseDto>  images {get; set;}
     }
 }

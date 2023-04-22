@@ -14,6 +14,8 @@ namespace RealEstateAPI.Helper
             CreateMap<Offers, OfferResponseDto>();
             CreateMap<Offers, RealtorsOfferResponseDto>();
             CreateMap<UsersOrRealtors, UserOrRealtorDto>();
+            CreateMap<Images, ImageResponseDto>();
+            CreateMap<ImageResponseDto, Images>();
         }
     }
 }
